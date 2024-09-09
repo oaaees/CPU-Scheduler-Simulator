@@ -30,7 +30,6 @@ class Process {
             arrival_time = time;
             state = current_state;
             priority = importance;
-            state = state;
         };
 
         void print(){
