@@ -20,23 +20,16 @@ class Process {
     public:
         int arrival_time;
         int burst_time;
-        int premp_time;
-        int burst_left;
         Process_state state;
-        int initial_wait;
-        int total_wait;
         int priority;
         int pid;
         
         Process(int burst, int time, int id, int importance, Process_state current_state){
             pid = id;
             burst_time = burst;
-            burst_left = burst;
             arrival_time = time;
             state = current_state;
             priority = importance;
-            initial_wait = 0;
-            total_wait = 0;
             state = state;
         };
 
