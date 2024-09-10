@@ -33,7 +33,7 @@ class Process {
         };
 
         void print(){
-            cout << "Proceso [" << pid << "] Arrival at " << arrival_time << "ms; Burst-time " << burst_time << "ms; Priority " << priority << "\n";
+            cout << "Process [" << pid << "] Arrival at " << arrival_time << "ms; Burst-time " << burst_time << "ms; Priority " << priority << "\n";
         }
 
 };
@@ -93,6 +93,12 @@ class Statistics {
     }
 };
 
+class sort_by_shortest_burst_time {
+public:
+    bool operator()(Process * a, Process * b){
+        return a->burst_time > b->burst_time;
+    }
+};
 
 
 class CPU {
@@ -100,6 +106,10 @@ class CPU {
     int clock;
 
     CPU (){
+        clock = 0.0;
+    }
+
+    void restart(){
         clock = 0.0;
     }
 
@@ -155,13 +165,66 @@ class CPU {
             last_completion_time = completion_time;
         }
     }
+
+    void shortest_job_first( Statistics &stats , vector<Process> processes){
+        priority_queue<Process *, vector<Process *>, sort_by_shortest_burst_time> ready_queue;
+        double last_completion_time = 0;
+
+        while (stats.number_processes < processes.size()){
+            // Search for processes that were created and just arrived
+
+            for(int i = 0; i < processes.size(); i++){
+                if (processes[i].arrival_time <= clock && processes[i].state == Process_state::NEW) { 
+                    processes[i].state = READY; 
+                    ready_queue.push(&processes[i]); 
+                }
+            }
+
+            // If ready_queue is empty and there is no process running then just increment clock until a new process arrives
+
+            if (ready_queue.empty()) {
+                clock++;
+                continue;
+            }
+
+            // Select first Process in the queue
+
+            Process * current = ready_queue.top();
+
+            // Change the context in the CPU
+
+            clock += context_switch_time;
+
+            // Start processing
+
+            double start_burst_time = clock;
+            clock += current->burst_time;
+
+            // Completed!
+
+            double completion_time = clock;
+            current->state = Process_state::TERMINATED;
+            ready_queue.pop();
+
+            // Calculations for analysis
+
+            double process_turnaround_time = completion_time - current->arrival_time;
+            double process_wait_time = process_turnaround_time - current->burst_time;
+            double cpu_usage_time = completion_time - start_burst_time;
+            double cpu_idle_time = start_burst_time - last_completion_time;
+
+            stats.update(process_turnaround_time, process_wait_time, cpu_usage_time, cpu_idle_time);
+
+            last_completion_time = completion_time;
+        }
+    }
 };
 
 
 int main(){
 
 	//Sets number of processes
-	int num_processes = 3;
+	int num_processes = 5;
 
 	srand((unsigned)time(0));
 	int random_burst;
@@ -200,10 +263,19 @@ int main(){
     cout << "\n\n";
 
     CPU cpu;
-    Statistics stats;
 
-    cpu.first_come_first_serve(stats, processes);
-    stats.print();
+    Statistics FCFS_stats;
+    cpu.first_come_first_serve(FCFS_stats, processes);
+    cout << "FIRST-COME FIRST-SERVE STATS: \n\n";
+    FCFS_stats.print();
+    cpu.restart();
+
+    Statistics STF_stats;
+    cpu.shortest_job_first(STF_stats, processes);
+    cout << "\n\nSHORTEST JOB FIRST STATS: \n\n";
+    STF_stats.print();
+    cpu.restart();
+
 
     return 0;
 }
