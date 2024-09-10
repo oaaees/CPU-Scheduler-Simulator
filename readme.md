@@ -9,7 +9,7 @@ Deben implementar varios algoritmos de planificación de procesos, estos son:
 - No Expulsivos
     - ~~Primero en llegar primero en ejecutar (FCFS)~~
     - ~~Primero el trabajo más corto (SJF)~~
-    - Selección aleatoria
+    - ~~Selección aleatoria~~
 - Expulsivos
     - Planificación basada en prioridades
     - Turno rotativo (round robin)
