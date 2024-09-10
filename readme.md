@@ -11,7 +11,6 @@ Deben implementar varios algoritmos de planificación de procesos, estos son:
     - ~~Primero el trabajo más corto (SJF)~~
     - ~~Selección aleatoria~~
 - Expulsivos
-    - Planificación basada en prioridades
     - Turno rotativo (round robin)
     - Primero el menor tiempo restante (SRTF)
     - Planificación basada en prioridades
