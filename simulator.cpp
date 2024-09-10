@@ -187,7 +187,7 @@ class CPU {
                 continue;
             }
 
-            // Select first Process in the queue
+            // Select first Process in the queue which is the one with the shortest burst time
 
             Process * current = ready_queue.top();
 
@@ -218,13 +218,67 @@ class CPU {
             last_completion_time = completion_time;
         }
     }
+
+    void random_selection( Statistics &stats , vector<Process> processes){
+        vector<Process *> ready_queue;
+        double last_completion_time = 0;
+
+        while (stats.number_processes < processes.size()){
+            // Search for processes that were created and just arrived
+
+            for(int i = 0; i < processes.size(); i++){
+                if (processes[i].arrival_time <= clock && processes[i].state == Process_state::NEW) { 
+                    processes[i].state = READY; 
+                    ready_queue.push_back(&processes[i]); 
+                }
+            }
+
+            // If ready_queue is empty and there is no process running then just increment clock until a new process arrives
+
+            if (ready_queue.empty()) {
+                clock++;
+                continue;
+            }
+
+            // Select random Process in the queue
+            int random_index = (rand()%ready_queue.size());
+            Process * current = ready_queue[random_index];
+
+            // Change the context in the CPU
+
+            clock += context_switch_time;
+
+            // Start processing
+
+            double start_burst_time = clock;
+            clock += current->burst_time;
+
+            // Completed!
+
+            double completion_time = clock;
+            current->state = Process_state::TERMINATED;
+            ready_queue.erase(ready_queue.begin() + random_index);
+
+            // Calculations for analysis
+
+            double process_turnaround_time = completion_time - current->arrival_time;
+            double process_wait_time = process_turnaround_time - current->burst_time;
+            double cpu_usage_time = completion_time - start_burst_time;
+            double cpu_idle_time = start_burst_time - last_completion_time;
+
+            stats.update(process_turnaround_time, process_wait_time, cpu_usage_time, cpu_idle_time);
+
+            last_completion_time = completion_time;
+        }
+    }
+    
 };
 
 
 int main(){
 
 	//Sets number of processes
-	int num_processes = 5;
+	int num_processes = 10;
 
 	srand((unsigned)time(0));
 	int random_burst;
@@ -276,6 +330,11 @@ int main(){
     STF_stats.print();
     cpu.restart();
 
+    Statistics RS_stats;
+    cpu.random_selection(RS_stats, processes);
+    cout << "\n\nRANDOM SELECTION STATS: \n\n";
+    RS_stats.print();
+    cpu.restart();
 
     return 0;
 }
