@@ -100,6 +100,13 @@ public:
     }
 };
 
+class sort_by_priority {
+public:
+    bool operator()(Process * a, Process * b){
+        return a->priority > b->priority;
+    }
+};
+
 
 class CPU {
     public:
@@ -271,6 +278,59 @@ class CPU {
             last_completion_time = completion_time;
         }
     }
+
+    void non_preemptive_priority( Statistics &stats , vector<Process> processes){
+        priority_queue<Process *, vector<Process *>, sort_by_priority> ready_queue;
+        double last_completion_time = 0;
+
+        while (stats.number_processes < processes.size()){
+            // Search for processes that were created and just arrived
+
+            for(int i = 0; i < processes.size(); i++){
+                if (processes[i].arrival_time <= clock && processes[i].state == Process_state::NEW) { 
+                    processes[i].state = READY; 
+                    ready_queue.push(&processes[i]); 
+                }
+            }
+
+            // If ready_queue is empty and there is no process running then just increment clock until a new process arrives
+
+            if (ready_queue.empty()) {
+                clock++;
+                continue;
+            }
+
+            // Select first Process in the queue which is the one with the lowest priority
+
+            Process * current = ready_queue.top();
+
+            // Change the context in the CPU
+
+            clock += context_switch_time;
+
+            // Start processing
+
+            double start_burst_time = clock;
+            clock += current->burst_time;
+
+            // Completed!
+
+            double completion_time = clock;
+            current->state = Process_state::TERMINATED;
+            ready_queue.pop();
+
+            // Calculations for analysis
+
+            double process_turnaround_time = completion_time - current->arrival_time;
+            double process_wait_time = process_turnaround_time - current->burst_time;
+            double cpu_usage_time = completion_time - start_burst_time;
+            double cpu_idle_time = start_burst_time - last_completion_time;
+
+            stats.update(process_turnaround_time, process_wait_time, cpu_usage_time, cpu_idle_time);
+
+            last_completion_time = completion_time;
+        }
+    }
     
 };
 
@@ -334,6 +394,12 @@ int main(){
     cpu.random_selection(RS_stats, processes);
     cout << "\n\nRANDOM SELECTION STATS: \n\n";
     RS_stats.print();
+    cpu.restart();
+
+    Statistics NP_P_stats;
+    cpu.non_preemptive_priority(NP_P_stats, processes);
+    cout << "\n\nNON-PREEMPTIVE PRIORITY STATS: \n\n";
+    NP_P_stats.print();
     cpu.restart();
 
     return 0;
