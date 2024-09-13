@@ -20,16 +20,22 @@ class Process {
     public:
         int arrival_time;
         int burst_time;
+        int burst_time_left;
         Process_state state;
         int priority;
         int pid;
+
+        int start_burst_time;
         
         Process(int burst, int time, int id, int importance, Process_state current_state){
             pid = id;
             burst_time = burst;
+            burst_time_left = burst;
             arrival_time = time;
             state = current_state;
             priority = importance;
+
+            start_burst_time = 0;
         };
 
         void print(){
@@ -69,7 +75,7 @@ class Statistics {
         CPU_idle_time = 0;
     }
 
-    void update(double turnaround_time, double wait_time, double burst_time, double idle_time){
+    void update_completed_process(double turnaround_time, double wait_time, double burst_time, double idle_time){
         number_processes++;
 
         if (turnaround_time < min_turnaround_time) min_turnaround_time = turnaround_time;
@@ -85,9 +91,15 @@ class Statistics {
         total_time = CPU_usage_time + CPU_idle_time;
     }
 
+    void update_partial_process(double cpu_time, double idle_time){
+        CPU_usage_time += cpu_time;
+        CPU_idle_time += idle_time;
+        total_time = CPU_usage_time + CPU_idle_time;       
+    }
+
     void print(){
-        cout << "Turnaround time: min " << min_turnaround_time << "ms; avg " << average_turnaround_time << "ms; max " << max_turnaround_time << "ms \n"; 
         cout << "Total wait time: min " << min_wait_time << "ms; avg " << average_wait_time << "ms; max " << max_wait_time << "ms \n"; 
+        cout << "Turnaround time: min " << min_turnaround_time << "ms; avg " << average_turnaround_time << "ms; max " << max_turnaround_time << "ms \n"; 
         cout << "Total time was " << total_time << "ms, CPU was in usage for " << CPU_usage_time << "ms and was idle for " << CPU_idle_time << "ms \n"; 
         cout << "CPU Usage was [" << CPU_usage_time * 100 / total_time << "%] and idle-time was [" << CPU_idle_time * 100 / total_time << "%] \n";
     }
@@ -129,7 +141,7 @@ class CPU {
 
             for(int i = 0; i < processes.size(); i++){
                 if (processes[i].arrival_time <= clock && processes[i].state == Process_state::NEW) { 
-                    processes[i].state = READY; 
+                    processes[i].state = Process_state::READY; 
                     ready_queue.push(&processes[i]); 
                 }
             }
@@ -167,7 +179,7 @@ class CPU {
             double cpu_usage_time = completion_time - start_burst_time;
             double cpu_idle_time = start_burst_time - last_completion_time;
 
-            stats.update(process_turnaround_time, process_wait_time, cpu_usage_time, cpu_idle_time);
+            stats.update_completed_process(process_turnaround_time, process_wait_time, cpu_usage_time, cpu_idle_time);
 
             last_completion_time = completion_time;
         }
@@ -182,7 +194,7 @@ class CPU {
 
             for(int i = 0; i < processes.size(); i++){
                 if (processes[i].arrival_time <= clock && processes[i].state == Process_state::NEW) { 
-                    processes[i].state = READY; 
+                    processes[i].state = Process_state::READY; 
                     ready_queue.push(&processes[i]); 
                 }
             }
@@ -220,7 +232,7 @@ class CPU {
             double cpu_usage_time = completion_time - start_burst_time;
             double cpu_idle_time = start_burst_time - last_completion_time;
 
-            stats.update(process_turnaround_time, process_wait_time, cpu_usage_time, cpu_idle_time);
+            stats.update_completed_process(process_turnaround_time, process_wait_time, cpu_usage_time, cpu_idle_time);
 
             last_completion_time = completion_time;
         }
@@ -235,7 +247,7 @@ class CPU {
 
             for(int i = 0; i < processes.size(); i++){
                 if (processes[i].arrival_time <= clock && processes[i].state == Process_state::NEW) { 
-                    processes[i].state = READY; 
+                    processes[i].state = Process_state::READY; 
                     ready_queue.push_back(&processes[i]); 
                 }
             }
@@ -273,7 +285,7 @@ class CPU {
             double cpu_usage_time = completion_time - start_burst_time;
             double cpu_idle_time = start_burst_time - last_completion_time;
 
-            stats.update(process_turnaround_time, process_wait_time, cpu_usage_time, cpu_idle_time);
+            stats.update_completed_process(process_turnaround_time, process_wait_time, cpu_usage_time, cpu_idle_time);
 
             last_completion_time = completion_time;
         }
@@ -288,7 +300,7 @@ class CPU {
 
             for(int i = 0; i < processes.size(); i++){
                 if (processes[i].arrival_time <= clock && processes[i].state == Process_state::NEW) { 
-                    processes[i].state = READY; 
+                    processes[i].state = Process_state::READY; 
                     ready_queue.push(&processes[i]); 
                 }
             }
@@ -326,11 +338,86 @@ class CPU {
             double cpu_usage_time = completion_time - start_burst_time;
             double cpu_idle_time = start_burst_time - last_completion_time;
 
-            stats.update(process_turnaround_time, process_wait_time, cpu_usage_time, cpu_idle_time);
+            stats.update_completed_process(process_turnaround_time, process_wait_time, cpu_usage_time, cpu_idle_time);
 
             last_completion_time = completion_time;
         }
     }
+
+    void round_robin( Statistics &stats , vector<Process> processes){
+        queue<Process *> ready_queue;
+        queue<Process *> blocked_queue;
+        int time_quantum = 500;
+
+        while (stats.number_processes < processes.size()){
+            // Search for processes that were created and arrived
+
+            for(int i = 0; i < processes.size(); i++){
+                if (processes[i].arrival_time <= clock && processes[i].state == Process_state::NEW) { 
+                    processes[i].state = Process_state::READY; 
+                    ready_queue.push(&processes[i]); 
+                }
+            }
+
+            // Push also any waiting process
+
+            for (int i = 0; i < blocked_queue.size(); i++){
+                blocked_queue.front()->state = Process_state::READY;
+                ready_queue.push(blocked_queue.front());
+                blocked_queue.pop();
+            }
+
+            // If ready_queue is empty and there is no process running then just increment clock until a new process arrives
+
+            if (ready_queue.empty()) {
+                clock++;
+                continue;
+            }
+
+            // Select first Process in the queue
+
+            Process * current = ready_queue.front();
+
+            // Change the context in the CPU
+
+            clock += context_switch_time;
+            unsigned int start_of_processing = clock;
+
+            // Start processing
+            if (current->burst_time_left == current->burst_time){
+                current->start_burst_time = clock;
+            }
+            
+            if(current->burst_time_left <= time_quantum){
+                clock += current->burst_time_left;
+                current->burst_time_left = 0;
+
+                // Completed!
+
+                double completion_time = clock;
+                current->state = Process_state::TERMINATED;
+
+                // Calculations for analysis
+
+                double process_turnaround_time = completion_time - current->arrival_time;
+                double process_wait_time = process_turnaround_time - current->burst_time;
+                double cpu_usage_time = completion_time - start_of_processing;
+                double cpu_idle_time = context_switch_time;
+
+                stats.update_completed_process(process_turnaround_time, process_wait_time, cpu_usage_time, cpu_idle_time);
+
+            } else {
+                clock += time_quantum;
+                current->burst_time_left = current->burst_time_left - time_quantum;
+                current->state = Process_state::BLOCKED;
+                blocked_queue.push(current);
+
+                stats.update_partial_process(time_quantum, context_switch_time);
+            }
+
+            ready_queue.pop();
+        }
+    }    
     
 };
 
@@ -338,7 +425,7 @@ class CPU {
 int main(){
 
 	//Sets number of processes
-	int num_processes = 10;
+	int num_processes = 5;
 
 	srand((unsigned)time(0));
 	int random_burst;
@@ -400,6 +487,12 @@ int main(){
     cpu.non_preemptive_priority(NP_P_stats, processes);
     cout << "\n\nNON-PREEMPTIVE PRIORITY STATS: \n\n";
     NP_P_stats.print();
+    cpu.restart();
+
+    Statistics RR_stats;
+    cpu.round_robin(RR_stats, processes);
+    cout << "\n\nROUND ROBIN STATS: \n\n";
+    RR_stats.print();
     cpu.restart();
 
     return 0;
