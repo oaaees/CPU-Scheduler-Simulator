@@ -10,10 +10,11 @@ Deben implementar varios algoritmos de planificación de procesos, estos son:
     - ~~Primero en llegar primero en ejecutar (FCFS)~~
     - ~~Primero el trabajo más corto (SJF)~~
     - ~~Selección aleatoria~~
+    - ~~Planificación basada en prioridades~~
 - Expulsivos
-    - Turno rotativo (round robin)
-    - Primero el menor tiempo restante (SRTF)
-    - Planificación basada en prioridades
+    - ~~Turno rotativo (round robin)~~
+    - ~~Primero el menor tiempo restante (SRTF)~~
+    - ~~Planificación basada en prioridades~~
 
 El simulador debe contar con una interfaz fácil de usar que permitirá a los usuarios:
 
