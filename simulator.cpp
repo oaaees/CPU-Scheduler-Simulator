@@ -472,7 +472,7 @@ class CPU {
 
             // Check if process is going to get interrupted while processing, this means a process with a shorter burst_time_left arrives
             // Also get the time of interruption so we can fast forward to that timestamp
-            
+
             bool is_going_to_get_interrupted = false;
             int time_of_interruption = -1;
 
@@ -516,7 +516,100 @@ class CPU {
 
             ready_queue.pop();
         }
-    }    
+    }
+
+    void preemptive_priority( Statistics &stats , vector<Process> processes){
+        priority_queue<Process *, vector<Process *>, sort_by_priority> ready_queue;
+        queue<Process *> blocked_queue;
+
+        int current_p = 0;
+
+        while (stats.number_processes < processes.size()){
+            // Check for processes that were created and arrived
+
+            if (processes[current_p].arrival_time <= clock && processes[current_p].state == Process_state::NEW && current_p <= processes.size() - 1){ 
+                processes[current_p].state = Process_state::READY; 
+                ready_queue.push(&processes[current_p]);
+                current_p++;
+                continue;
+            }
+
+            // Push also any waiting process
+
+            for (int i = 0; i < blocked_queue.size(); i++){
+                blocked_queue.front()->state = Process_state::READY;
+                ready_queue.push(blocked_queue.front());
+                blocked_queue.pop();
+            }
+
+            // If ready_queue is empty then just increment clock until a new process arrives
+
+            if (ready_queue.empty()) {
+                clock++;
+                continue;
+            }
+
+            // Select first Process in the queue
+
+            Process * current = ready_queue.top();
+
+            // Change the context in the CPU
+
+            clock += context_switch_time;
+            unsigned int start_of_processing = clock;
+
+            // Start processing
+            if (current->burst_time_left == current->burst_time){
+                current->start_burst_time = clock;
+            }
+
+            // Check if process is going to get interrupted while processing, this means a process with a lower priority arrives
+            // Also get the time of interruption so we can fast forward to that timestamp
+            
+            bool is_going_to_get_interrupted = false;
+            int time_of_interruption = -1;
+
+            for (int i = current_p; i < processes.size(); i++){
+                if (current->priority > processes[i].priority){
+                    is_going_to_get_interrupted = true;
+                    time_of_interruption = processes[i].arrival_time;
+                    break;
+                }
+                if (processes[i].arrival_time > clock + current->burst_time_left){
+                    break;
+                }
+            }
+            
+            if(!is_going_to_get_interrupted){
+                clock += current->burst_time_left;
+                current->burst_time_left = 0;
+
+                // Completed!
+
+                double completion_time = clock;
+                current->state = Process_state::TERMINATED;
+
+                // Calculations for analysis
+
+                double process_turnaround_time = completion_time - current->arrival_time;
+                double process_wait_time = process_turnaround_time - current->burst_time;
+                double cpu_usage_time = completion_time - start_of_processing;
+                double cpu_idle_time = context_switch_time;
+
+                stats.update_completed_process(process_turnaround_time, process_wait_time, cpu_usage_time, cpu_idle_time);
+
+            } else {
+                clock = time_of_interruption;
+                current->burst_time_left -= (clock - start_of_processing);
+                current->state = Process_state::BLOCKED;
+                blocked_queue.push(current);
+
+                stats.update_partial_process(clock - start_of_processing, context_switch_time);
+            }
+
+            ready_queue.pop();
+        }
+    }     
     
 };
 
@@ -582,10 +675,10 @@ int main(){
     RS_stats.print();
     cpu.restart();
 
-    Statistics NP_P_stats;
-    cpu.non_preemptive_priority(NP_P_stats, processes);
+    Statistics NP_Priority_stats;
+    cpu.non_preemptive_priority(NP_Priority_stats, processes);
     cout << "\n\nNON-PREEMPTIVE PRIORITY STATS: \n\n";
-    NP_P_stats.print();
+    NP_Priority_stats.print();
     cpu.restart();
 
     Statistics RR_stats;
@@ -599,6 +692,13 @@ int main(){
     cout << "\n\nSHORTEST REMAINING TIME FIRST STATS: \n\n";
     SRTF_stats.print();
     cpu.restart();
+
+    Statistics P_Priority;
+    cpu.preemptive_priority(P_Priority, processes);
+    cout << "\n\nPREEMPTIVE PRIORITY STATS: \n\n";
+    P_Priority.print();
+    cpu.restart();
+
 
     return 0;
 }
