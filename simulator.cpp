@@ -564,8 +564,7 @@ void CPU::preemptive_priority( Statistics &stats , vector<Process> processes){
 }    
 
 
-int main(){
-
+vector<Process> create_random_processes(int n){
 	//Sets number of processes
 	int num_processes = 5;
 
@@ -601,6 +600,12 @@ int main(){
 
     // Sort processes by arrival time
     sort(processes.begin(), processes.end(), [](Process a, Process b){ return a.arrival_time < b.arrival_time; });
+
+    return processes;
+}
+
+int main(){
+    vector<Process> processes = create_random_processes(5);
 
     for(int i = 0; i < processes.size(); i++) processes[i].print();
     cout << "\n\n";
