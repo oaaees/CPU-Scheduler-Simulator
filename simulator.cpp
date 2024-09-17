@@ -60,6 +60,8 @@ class Statistics {
     double CPU_idle_time;
     double total_time;
 
+    vector<tuple<int, int>> log;
+
     Statistics () {
         number_processes = 0;
 
@@ -73,9 +75,11 @@ class Statistics {
 
         CPU_usage_time = 0;
         CPU_idle_time = 0;
+
+        log = {};
     }
 
-    void update_completed_process(double turnaround_time, double wait_time, double burst_time, double idle_time){
+    void update_completed_process(double turnaround_time, double wait_time, double cpu_time, double idle_time, int process_id){
         number_processes++;
 
         if (turnaround_time < min_turnaround_time) min_turnaround_time = turnaround_time;
@@ -86,15 +90,21 @@ class Statistics {
         if (wait_time > max_wait_time) max_wait_time = wait_time;
         if ( number_processes == 1 ){ average_wait_time = wait_time; } else { average_wait_time = average_wait_time + ((wait_time - average_wait_time) / number_processes); }
     
-        CPU_usage_time += burst_time;
+        CPU_usage_time += cpu_time;
         CPU_idle_time += idle_time;
         total_time = CPU_usage_time + CPU_idle_time;
+
+        log.push_back(make_tuple(-1, idle_time));
+        log.push_back(make_tuple(process_id, cpu_time));
     }
 
-    void update_partial_process(double cpu_time, double idle_time){
+    void update_partial_process(double cpu_time, double idle_time, int process_id){
         CPU_usage_time += cpu_time;
         CPU_idle_time += idle_time;
         total_time = CPU_usage_time + CPU_idle_time;       
+
+        log.push_back(make_tuple(-1, idle_time));
+        log.push_back(make_tuple(process_id, cpu_time));
     }
 
     void print(){
@@ -185,7 +195,7 @@ class CPU {
             double cpu_usage_time = completion_time - start_burst_time;
             double cpu_idle_time = start_burst_time - last_completion_time;
 
-            stats.update_completed_process(process_turnaround_time, process_wait_time, cpu_usage_time, cpu_idle_time);
+            stats.update_completed_process(process_turnaround_time, process_wait_time, cpu_usage_time, cpu_idle_time, current->pid);
 
             last_completion_time = completion_time;
         }
@@ -238,7 +248,7 @@ class CPU {
             double cpu_usage_time = completion_time - start_burst_time;
             double cpu_idle_time = start_burst_time - last_completion_time;
 
-            stats.update_completed_process(process_turnaround_time, process_wait_time, cpu_usage_time, cpu_idle_time);
+            stats.update_completed_process(process_turnaround_time, process_wait_time, cpu_usage_time, cpu_idle_time, current->pid);
 
             last_completion_time = completion_time;
         }
@@ -291,7 +301,7 @@ class CPU {
             double cpu_usage_time = completion_time - start_burst_time;
             double cpu_idle_time = start_burst_time - last_completion_time;
 
-            stats.update_completed_process(process_turnaround_time, process_wait_time, cpu_usage_time, cpu_idle_time);
+            stats.update_completed_process(process_turnaround_time, process_wait_time, cpu_usage_time, cpu_idle_time, current->pid);
 
             last_completion_time = completion_time;
         }
@@ -344,7 +354,7 @@ class CPU {
             double cpu_usage_time = completion_time - start_burst_time;
             double cpu_idle_time = start_burst_time - last_completion_time;
 
-            stats.update_completed_process(process_turnaround_time, process_wait_time, cpu_usage_time, cpu_idle_time);
+            stats.update_completed_process(process_turnaround_time, process_wait_time, cpu_usage_time, cpu_idle_time, current->pid);
 
             last_completion_time = completion_time;
         }
@@ -410,7 +420,7 @@ class CPU {
                 double cpu_usage_time = completion_time - start_of_processing;
                 double cpu_idle_time = context_switch_time;
 
-                stats.update_completed_process(process_turnaround_time, process_wait_time, cpu_usage_time, cpu_idle_time);
+                stats.update_completed_process(process_turnaround_time, process_wait_time, cpu_usage_time, cpu_idle_time, current->pid);
 
             } else {
                 clock += time_quantum;
@@ -418,7 +428,7 @@ class CPU {
                 current->state = Process_state::BLOCKED;
                 blocked_queue.push(current);
 
-                stats.update_partial_process(time_quantum, context_switch_time);
+                stats.update_partial_process(time_quantum, context_switch_time, current->pid);
             }
 
             ready_queue.pop();
@@ -434,7 +444,7 @@ class CPU {
         while (stats.number_processes < processes.size()){
             // Check for processes that were created and arrived
 
-            if (processes[current_p].arrival_time <= clock && processes[current_p].state == Process_state::NEW && current_p <= processes.size() - 1){ 
+            if (current_p <= processes.size() - 1 && processes[current_p].arrival_time <= clock && processes[current_p].state == Process_state::NEW){ 
                 processes[current_p].state = Process_state::READY; 
                 ready_queue.push(&processes[current_p]);
                 current_p++;
@@ -503,7 +513,7 @@ class CPU {
                 double cpu_usage_time = completion_time - start_of_processing;
                 double cpu_idle_time = context_switch_time;
 
-                stats.update_completed_process(process_turnaround_time, process_wait_time, cpu_usage_time, cpu_idle_time);
+                stats.update_completed_process(process_turnaround_time, process_wait_time, cpu_usage_time, cpu_idle_time, current->pid);
 
             } else {
                 clock = time_of_interruption;
@@ -511,7 +521,7 @@ class CPU {
                 current->state = Process_state::BLOCKED;
                 blocked_queue.push(current);
 
-                stats.update_partial_process(clock - start_of_processing, context_switch_time);
+                stats.update_partial_process(clock - start_of_processing, context_switch_time, current->pid);
             }
 
             ready_queue.pop();
@@ -527,7 +537,7 @@ class CPU {
         while (stats.number_processes < processes.size()){
             // Check for processes that were created and arrived
 
-            if (processes[current_p].arrival_time <= clock && processes[current_p].state == Process_state::NEW && current_p <= processes.size() - 1){ 
+            if (current_p <= processes.size() - 1 && processes[current_p].arrival_time <= clock && processes[current_p].state == Process_state::NEW){ 
                 processes[current_p].state = Process_state::READY; 
                 ready_queue.push(&processes[current_p]);
                 current_p++;
@@ -596,7 +606,7 @@ class CPU {
                 double cpu_usage_time = completion_time - start_of_processing;
                 double cpu_idle_time = context_switch_time;
 
-                stats.update_completed_process(process_turnaround_time, process_wait_time, cpu_usage_time, cpu_idle_time);
+                stats.update_completed_process(process_turnaround_time, process_wait_time, cpu_usage_time, cpu_idle_time, current->pid);
 
             } else {
                 clock = time_of_interruption;
@@ -604,7 +614,7 @@ class CPU {
                 current->state = Process_state::BLOCKED;
                 blocked_queue.push(current);
 
-                stats.update_partial_process(clock - start_of_processing, context_switch_time);
+                stats.update_partial_process(clock - start_of_processing, context_switch_time, current->pid);
             }
 
             ready_queue.pop();
