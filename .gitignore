@@ -1,5 +1,2 @@
-*
-!.gitignore
-!*.cpp
-!*.h
-!*.md
+build/
+*.pro.user

@@ -87,3 +87,5 @@ class CPU {
     void preemptive_priority( Statistics &stats , vector<Process> processes); 
     
 };
+
+vector<Process> create_random_processes(int n);

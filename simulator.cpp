@@ -566,7 +566,7 @@ void CPU::preemptive_priority( Statistics &stats , vector<Process> processes){
 
 vector<Process> create_random_processes(int n){
 	//Sets number of processes
-	int num_processes = 5;
+    int num_processes = n;
 
 	srand((unsigned)time(0));
 	int random_burst;
@@ -582,14 +582,14 @@ vector<Process> create_random_processes(int n){
 
 	//Creates processes with zero arrival time
 	for (int i = 0; i < num_zero; i++){
-		random_burst = (rand()%3500)+500;
+        random_burst = (rand()%1000)+100;
 		importance = (rand()%5);
 		processes.push_back(Process(random_burst, 0, i+1, importance, Process_state::NEW));
 	}
 
 	//Creates processes with non zero arrival time
 	for(int i = 0; i < num_rand; i++){
-		random_burst = (rand()%3500)+500;
+        random_burst = (rand()%1000)+100;
 		importance = (rand()%5);
 		double lambda = 0.001;
 		double r = ((double) rand()/(RAND_MAX));
@@ -602,57 +602,4 @@ vector<Process> create_random_processes(int n){
     sort(processes.begin(), processes.end(), [](Process a, Process b){ return a.arrival_time < b.arrival_time; });
 
     return processes;
-}
-
-int main(){
-    vector<Process> processes = create_random_processes(5);
-
-    for(int i = 0; i < processes.size(); i++) processes[i].print();
-    cout << "\n\n";
-
-    CPU cpu;
-
-    Statistics FCFS_stats;
-    cpu.first_come_first_serve(FCFS_stats, processes);
-    cout << "FIRST-COME FIRST-SERVE STATS: \n\n";
-    FCFS_stats.print();
-    cpu.restart();
-
-    Statistics STF_stats;
-    cpu.shortest_job_first(STF_stats, processes);
-    cout << "\n\nSHORTEST JOB FIRST STATS: \n\n";
-    STF_stats.print();
-    cpu.restart();
-
-    Statistics RS_stats;
-    cpu.random_selection(RS_stats, processes);
-    cout << "\n\nRANDOM SELECTION STATS: \n\n";
-    RS_stats.print();
-    cpu.restart();
-
-    Statistics NP_Priority_stats;
-    cpu.non_preemptive_priority(NP_Priority_stats, processes);
-    cout << "\n\nNON-PREEMPTIVE PRIORITY STATS: \n\n";
-    NP_Priority_stats.print();
-    cpu.restart();
-
-    Statistics RR_stats;
-    cpu.round_robin(RR_stats, processes);
-    cout << "\n\nROUND ROBIN STATS: \n\n";
-    RR_stats.print();
-    cpu.restart();
-
-    Statistics SRTF_stats;
-    cpu.shortest_remaining_time_first(SRTF_stats, processes);
-    cout << "\n\nSHORTEST REMAINING TIME FIRST STATS: \n\n";
-    SRTF_stats.print();
-    cpu.restart();
-
-    Statistics P_Priority;
-    cpu.preemptive_priority(P_Priority, processes);
-    cout << "\n\nPREEMPTIVE PRIORITY STATS: \n\n";
-    P_Priority.print();
-    cpu.restart();
-
-    return 0;
 }
