@@ -6,6 +6,8 @@
 #include <math.h>
 using namespace std;
 
+#include <QString>
+
 enum Process_state {
     NEW,
     RUNNING,
@@ -27,7 +29,7 @@ class Process {
         
         Process(int burst, int time, int id, int importance, Process_state current_state);
         void print();
-
+        QString get_info();
 };
 
 class Statistics {

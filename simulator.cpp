@@ -18,6 +18,10 @@ void Process::print(){
     cout << "Process [" << pid << "] Arrival at " << arrival_time << "ms; Burst-time " << burst_time << "ms; Priority " << priority << "\n";
 }
 
+QString Process::get_info(){
+    return "Proceso [" + QString::number(pid) + "] llegó a los " + QString::number(arrival_time) + "ms; Tiempo de Ejecución: " + QString::number(burst_time) + "ms; Prioridad: " + QString::number(priority);
+}
+
 Statistics::Statistics() {
     number_processes = 0;
 
@@ -305,7 +309,7 @@ void CPU::non_preemptive_priority( Statistics &stats , vector<Process> processes
 void CPU::round_robin( Statistics &stats , vector<Process> processes){
     queue<Process *> ready_queue;
     queue<Process *> blocked_queue;
-    int time_quantum = 500;
+    int time_quantum = 200;
 
     while (stats.number_processes < processes.size()){
         // Search for processes that were created and arrived
@@ -600,6 +604,10 @@ vector<Process> create_random_processes(int n){
 
     // Sort processes by arrival time
     sort(processes.begin(), processes.end(), [](Process a, Process b){ return a.arrival_time < b.arrival_time; });
+
+    for (int i = 0; i < processes.size(); i++){
+        processes[i].pid = i + 1;
+    }
 
     return processes;
 }

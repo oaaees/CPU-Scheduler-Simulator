@@ -451,28 +451,30 @@ color: rgb(255,255,255);
      <string>Ejecutando CPU: 0ms [0.0%]</string>
     </property>
    </widget>
-   <widget class="QGraphicsView" name="view">
+   <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
      <rect>
       <x>20</x>
       <y>170</y>
       <width>1281</width>
-      <height>311</height>
+      <height>301</height>
      </rect>
     </property>
-   </widget>
-   <widget class="QScrollBar" name="horizontalScrollBar">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>460</y>
-      <width>1281</width>
-      <height>16</height>
-     </rect>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
     </property>
-    <property name="orientation">
-     <enum>Qt::Orientation::Horizontal</enum>
-    </property>
+    <widget class="QWidget" name="tab">
+     <attribute name="title">
+      <string>Tab 1</string>
+     </attribute>
+    </widget>
+    <widget class="QWidget" name="tab_2">
+     <attribute name="title">
+      <string>Tab 2</string>
+     </attribute>
+    </widget>
    </widget>
   </widget>
  </widget>

@@ -8,17 +8,24 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    ui->sliderNumProcesos->setRange(1, 20);
+    ui->sliderNumProcesos->setRange(1, 10);
     ui->sliderNumProcesos->setValue(5);
 
     connect(ui->btnSimular, &QPushButton::released, this, &MainWindow::handle_simular);
     connect(ui->sliderNumProcesos, &QSlider::valueChanged, this, &MainWindow::handle_slider);
 
-    ui->view->addScrollBarWidget(ui->horizontalScrollBar, Qt::AlignCenter);
+    QGraphicsScene *scene = new QGraphicsScene(this);
+    scene->addText("Para empezar dale click a simular.");
 
-    QGraphicsScene *graphic = new QGraphicsScene(this);
-    graphic->addText("Para empezar dale click a simular.");
-    ui->view->setScene(graphic);
+    QGraphicsView *view = new QGraphicsView(scene);
+    view->setScene(scene);
+    ui->tabWidget->clear();
+    ui->tabWidget->addTab(view, "Simulación");
+
+    ui->tabWidget->addTab(new QWidget(), "Procesos");
+    ui->tabWidget->addTab(new QWidget(), "Log");
+    ui->tabWidget->setTabEnabled(1, false);
+    ui->tabWidget->setTabEnabled(2, false);
 }
 
 MainWindow::~MainWindow()
@@ -62,26 +69,51 @@ void MainWindow::handle_simular() {
             break;
     }
 
-    QGraphicsScene *graphic = new QGraphicsScene(this);
+    QGraphicsScene *scene = new QGraphicsScene(this);
 
-    double canvas_h = ui->view->height();
-    double canvas_w = ui->view->width();
+    double canvas_h = ui->tabWidget->height();
+    double canvas_w = ui->tabWidget->width();
 
     double timeline_h = canvas_h * 0.4;
     double timeline_w = canvas_w * 0.9;
-
-    QPen pen(QColor(255,255,255));
-    //graphic->addRect((canvas_w - timeline_w) / 2, (canvas_h - timeline_h) / 2, timeline_w, timeline_h, pen);
     double last_x = (canvas_w - timeline_w) / 2;
 
     for(int i = 0; i < stats.log.size(); i++){
-        QColor color = (get<0>(stats.log[i]) != -1) ? QColor(0,0,0) : QColor(255, 0, 0);
+        QColor color = (get<0>(stats.log[i]) != -1) ? QColor(60, 91, 111) : QColor(21, 52, 72);
         double process_w = get<1>(stats.log[i]) * timeline_w / stats.total_time;
-        graphic->addItem(new TimeSlice(color, last_x, (canvas_h - timeline_h) / 2, (process_w <= 2) ?  2 : process_w, timeline_h, get<0>(stats.log[i])));
+        scene->addItem(new TimeSlice(color, last_x, (canvas_h - timeline_h) / 2, (process_w <= 2) ?  2 : process_w, timeline_h, get<0>(stats.log[i])));
         last_x += process_w;
     }
 
-    ui->view->setScene(graphic);
+    QGraphicsView *view = new QGraphicsView(scene);
+    view->setScene(scene);
+    ui->tabWidget->clear();
+    ui->tabWidget->insertTab(0, view, "Simulación");
+
+
+    QTextEdit *processes_info = new QTextEdit(ui->tabWidget);
+    processes_info->setCurrentFont(QFont("Monospace"));
+
+    for(int i = 0; i < processes.size(); i++){
+        processes_info->append(processes[i].get_info());
+    }
+
+    ui->tabWidget->insertTab(1, processes_info, "Procesos");
+
+    QTextEdit *log = new QTextEdit(ui->tabWidget);
+    log->setCurrentFont(QFont("Monospace"));
+    int last_timestamp = 0;
+
+    for(int i = 0; i < stats.log.size(); i++){
+        if (get<0>(stats.log[i]) == -1) {
+            log->append("De " + QString::number(last_timestamp) + "ms a " + QString::number(last_timestamp + get<1>(stats.log[i])) + "ms el CPU estuvo inactivo por [" + QString::number(get<1>(stats.log[i])) + "ms]");
+        } else {
+            log->append("De " + QString::number(last_timestamp) + "ms a " + QString::number(last_timestamp + get<1>(stats.log[i])) + "ms el proceso con ID: " + QString::number(get<0>(stats.log[i])) + " corrió por [" + QString::number(get<1>(stats.log[i])) + "ms]");
+        }
+        last_timestamp += get<1>(stats.log[i]);
+    }
+
+    ui->tabWidget->insertTab(2, log, "Log");
 
     ui->txtEsperaMin->setText("Mínimo:  " + QString::number(stats.min_wait_time) + "ms");
     ui->txtEsperaAvg->setText("Promedio:  " + QString::number(stats.average_wait_time) + "ms");
