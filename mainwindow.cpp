@@ -26,7 +26,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->tabWidget->addTab(new QWidget(), "Procesos");
     ui->tabWidget->addTab(new QWidget(), "Log");
+    ui->tabWidget->addTab(new QWidget(), "Algoritmo");
     ui->tabWidget->setTabEnabled(1, false);
+    ui->tabWidget->setTabEnabled(2, false);
     ui->tabWidget->setTabEnabled(2, false);
 }
 
@@ -43,31 +45,40 @@ void MainWindow::handle_algorithm_select() {
     if (current_processes.empty()) return;
 
     int current_tab = ui->tabWidget->currentIndex();
+    QString algorithm_info;
 
     CPU cpu;
     Statistics stats;
+    AlgorithmsInfo definitions;
 
     switch(ui->AlgorithmSelect->currentIndex()){
         case 0:
             cpu.first_come_first_serve(stats, current_processes);
+            algorithm_info = definitions.FCFS_info;
             break;
         case 1:
             cpu.shortest_job_first(stats, current_processes);
+            algorithm_info = definitions.SJF_info;
             break;
         case 2:
             cpu.random_selection(stats, current_processes);
+            algorithm_info = definitions.random_selection_info;
             break;
         case 3:
             cpu.non_preemptive_priority(stats, current_processes);
+            algorithm_info = definitions.np_priority_info;
             break;
         case 4:
             cpu.round_robin(stats, current_processes);
+            algorithm_info = definitions.round_robin_info;
             break;
         case 5:
             cpu.shortest_remaining_time_first(stats, current_processes);
+            algorithm_info = definitions.SRTF_info;
             break;
         case 6:
             cpu.preemptive_priority(stats, current_processes);
+            algorithm_info = definitions.p_priority_info;
             break;
         default:
             cout << "HOLY COW YOU FOUND A NEW ALGORITHM\n";
@@ -119,6 +130,11 @@ void MainWindow::handle_algorithm_select() {
     }
 
     ui->tabWidget->insertTab(2, log, "Log");
+
+    QTextEdit *infoTab = new QTextEdit(ui->tabWidget);
+    infoTab->setMarkdown(algorithm_info);
+    ui->tabWidget->insertTab(3, infoTab, "Algoritmo");
+
     ui->tabWidget->setCurrentIndex(current_tab);
 
     ui->txtEsperaMin->setText("Mínimo:  " + QString::number(stats.min_wait_time) + "ms");
