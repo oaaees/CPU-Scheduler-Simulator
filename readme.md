@@ -1,30 +1,30 @@
-## Simulador de Planificación de Procesos 
 
-Una herramienta de software que simula varios algoritmos de planificación de procesos comúnmente utilizados en sistemas operativos. El objetivo del proyecto es obtener experiencia práctica en entender, implementar y analizar el comportamiento de diferentes algoritmos de planificación de procesos.
+# Simulador de Planificación de Procesos del CPU
 
-### TO-DO
+Esta es una herramienta de software que simula varios algoritmos de planificación de procesos comúnmente utilizados en sistemas operativos. El objetivo del proyecto es obtener experiencia práctica en entender, implementar y analizar el comportamiento de diferentes algoritmos de planificación de procesos.
 
-Deben implementar varios algoritmos de planificación de procesos, estos son:
+La app está escrita en C++ y utiliza Qt para la interfaz gráfica
 
+ ### Algoritmos Implementados
 - No Expulsivos
-    - ~~Primero en llegar primero en ejecutar (FCFS)~~
-    - ~~Primero el trabajo más corto (SJF)~~
-    - ~~Selección aleatoria~~
-    - ~~Planificación basada en prioridades~~
+    - Primero en llegar primero en ejecutar (FCFS)
+    - Primero el trabajo más corto (SJF)
+    - Selección aleatoria
+    - Planificación basada en prioridades
 - Expulsivos
-    - ~~Turno rotativo (round robin)~~
-    - ~~Primero el menor tiempo restante (SRTF)~~
-    - ~~Planificación basada en prioridades~~
+    - Turno rotativo (round robin)
+    - Primero el menor tiempo restante (SRTF)
+    - Planificación basada en prioridades
 
-El simulador debe contar con una interfaz fácil de usar que permitirá a los usuarios:
+El simulador cuenta con una interfaz que permite a los usuarios:
 
-- Generar de manera aleatoria detalles de procesos como tiempo de procesamiento (burst time), tiempo de procesamiento de E/S (IO burst time) y prioridad.
-- Seleccionar y configurar diferentes algoritmos de planificación para observar su comportamiento.
-- Definir el tiempo de cada paso (tick) del procesador y el tiempo de llegada.
-- Explicar brevemente los parámetros para generar los detalles de cada proceso.
-- Explicar brevemente el algoritmo en cuestión.
+- Generar de manera aleatoria detalles de procesos como tiempo de llegada (arrival time), tiempo de procesamiento (burst time) y prioridad.
+- Seleccionar diferentes algoritmos de planificación para observar su comportamiento.
 
+## Instalar y Ejecutar
 
-El simulador proporcionará visualizaciones para ayudar a los usuarios a comprender mejor el proceso de planificación, estas visualizaciones deben mostrar las actualizaciones en tiempo real sobre el estado de los procesos en la cola de listos, bloqueados, terminados y la CPU.
+Para abrir la aplicación basta con abrir el proyecto en [Qt Creator](https://www.qt.io/download-open-source) y ejecutar desde su IDE.
 
-El simulador incluirá estadísticas para analizar el rendimiento de los algoritmos de planificación, para ello deben calcular % de uso del procesador, tiempo promedio de espera, tiempo promedio de bloqueo, tiempo promedio de ejecución, total de procesos completados, arribo de nuevos procesos por paso y tiempo total. 
+## Créditos
+
+- Johan Manuel Paredes Pino V27507388
