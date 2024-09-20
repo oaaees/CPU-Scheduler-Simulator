@@ -22,8 +22,8 @@ El simulador cuenta con una interfaz que permite a los usuarios:
 - Seleccionar diferentes algoritmos de planificación para observar su comportamiento.
 
 
-<img src="imgs/screenshot_1.png" alt="Captura de Pantalla 1" width="200"/>
-<img src="imgs/screenshot_2.png" alt="Captura de Pantalla 2" width="200"/>
+<img src="imgs/screenshot_1.png" alt="Captura de Pantalla 1" width="500"/>
+<img src="imgs/screenshot_2.png" alt="Captura de Pantalla 2" width="500"/>
 
 ## Instalar y Ejecutar
 
