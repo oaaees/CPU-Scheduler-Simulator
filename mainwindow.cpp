@@ -29,7 +29,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->tabWidget->addTab(new QWidget(), "Algoritmo");
     ui->tabWidget->setTabEnabled(1, false);
     ui->tabWidget->setTabEnabled(2, false);
-    ui->tabWidget->setTabEnabled(2, false);
+    ui->tabWidget->setTabEnabled(3, false);
 }
 
 MainWindow::~MainWindow()
@@ -94,7 +94,7 @@ void MainWindow::handle_algorithm_select() {
     double timeline_w = canvas_w * 0.9;
     double last_x = (canvas_w - timeline_w) / 2;
 
-    for(int i = 0; i < stats.log.size(); i++){
+    for(size_t i = 0; i < stats.log.size(); i++){
         QColor color = (get<0>(stats.log[i]) != -1) ? QColor(60, 91, 111) : QColor(21, 52, 72);
         double process_w = get<1>(stats.log[i]) * timeline_w / stats.total_time;
         scene->addItem(new TimeSlice(color, last_x, (canvas_h - timeline_h) / 2, (process_w <= 2) ?  2 : process_w, timeline_h, get<0>(stats.log[i])));
@@ -110,7 +110,7 @@ void MainWindow::handle_algorithm_select() {
     QTextEdit *processes_info = new QTextEdit(ui->tabWidget);
     processes_info->setCurrentFont(QFont("Monospace"));
 
-    for(int i = 0; i < current_processes.size(); i++){
+    for(size_t i = 0; i < current_processes.size(); i++){
         processes_info->append(current_processes[i].get_info());
     }
 
@@ -120,7 +120,7 @@ void MainWindow::handle_algorithm_select() {
     log->setCurrentFont(QFont("Monospace"));
     int last_timestamp = 0;
 
-    for(int i = 0; i < stats.log.size(); i++){
+    for(size_t i = 0; i < stats.log.size(); i++){
         if (get<0>(stats.log[i]) == -1) {
             log->append("De " + QString::number(last_timestamp) + "ms a " + QString::number(last_timestamp + get<1>(stats.log[i])) + "ms el CPU estuvo inactivo por [" + QString::number(get<1>(stats.log[i])) + "ms]");
         } else {

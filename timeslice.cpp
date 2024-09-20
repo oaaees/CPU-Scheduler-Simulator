@@ -18,6 +18,9 @@ QRectF TimeSlice::boundingRect() const
 
 void TimeSlice::paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget)
 {
+    Q_UNUSED(item);
+    Q_UNUSED(widget);
+
     painter->fillRect(x, y, w, h, color);
     if (pid != -1) painter->drawText(x + (w / 2), y + (h / 2),QString::number(this->pid));
 }
