@@ -1,3 +1,6 @@
+#ifndef SIMULATOR_H
+#define SIMULATOR_H
+
 #include <vector>
 #include <queue>
 #include <algorithm> 
@@ -91,3 +94,5 @@ class CPU {
 };
 
 vector<Process> create_random_processes(int n);
+
+#endif // SIMULATOR_H

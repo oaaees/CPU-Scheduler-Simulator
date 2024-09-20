@@ -101,10 +101,10 @@ void CPU::first_come_first_serve(Statistics &stats , vector<Process> processes){
     while (stats.number_processes < processes.size()){
         // Search for processes that were created and just arrived
 
-        for(int i = 0; i < processes.size(); i++){
-            if (processes[i].arrival_time <= clock && processes[i].state == Process_state::NEW) { 
-                processes[i].state = Process_state::READY; 
-                ready_queue.push(&processes[i]); 
+        for(size_t i = 0; i < processes.size(); i++){
+            if (processes[i].arrival_time <= clock && processes[i].state == Process_state::NEW) {
+                processes[i].state = Process_state::READY;
+                ready_queue.push(&processes[i]);
             }
         }
 
@@ -154,10 +154,10 @@ void CPU::shortest_job_first( Statistics &stats , vector<Process> processes){
     while (stats.number_processes < processes.size()){
         // Search for processes that were created and just arrived
 
-        for(int i = 0; i < processes.size(); i++){
-            if (processes[i].arrival_time <= clock && processes[i].state == Process_state::NEW) { 
-                processes[i].state = Process_state::READY; 
-                ready_queue.push(&processes[i]); 
+        for(size_t i = 0; i < processes.size(); i++){
+            if (processes[i].arrival_time <= clock && processes[i].state == Process_state::NEW) {
+                processes[i].state = Process_state::READY;
+                ready_queue.push(&processes[i]);
             }
         }
 
@@ -207,10 +207,10 @@ void CPU::random_selection( Statistics &stats , vector<Process> processes){
     while (stats.number_processes < processes.size()){
         // Search for processes that were created and just arrived
 
-        for(int i = 0; i < processes.size(); i++){
-            if (processes[i].arrival_time <= clock && processes[i].state == Process_state::NEW) { 
-                processes[i].state = Process_state::READY; 
-                ready_queue.push_back(&processes[i]); 
+        for(size_t i = 0; i < processes.size(); i++){
+            if (processes[i].arrival_time <= clock && processes[i].state == Process_state::NEW) {
+                processes[i].state = Process_state::READY;
+                ready_queue.push_back(&processes[i]);
             }
         }
 
@@ -260,10 +260,10 @@ void CPU::non_preemptive_priority( Statistics &stats , vector<Process> processes
     while (stats.number_processes < processes.size()){
         // Search for processes that were created and just arrived
 
-        for(int i = 0; i < processes.size(); i++){
-            if (processes[i].arrival_time <= clock && processes[i].state == Process_state::NEW) { 
-                processes[i].state = Process_state::READY; 
-                ready_queue.push(&processes[i]); 
+        for(size_t i = 0; i < processes.size(); i++){
+            if (processes[i].arrival_time <= clock && processes[i].state == Process_state::NEW) {
+                processes[i].state = Process_state::READY;
+                ready_queue.push(&processes[i]);
             }
         }
 
@@ -314,16 +314,16 @@ void CPU::round_robin( Statistics &stats , vector<Process> processes){
     while (stats.number_processes < processes.size()){
         // Search for processes that were created and arrived
 
-        for(int i = 0; i < processes.size(); i++){
-            if (processes[i].arrival_time <= clock && processes[i].state == Process_state::NEW) { 
-                processes[i].state = Process_state::READY; 
-                ready_queue.push(&processes[i]); 
+        for(size_t i = 0; i < processes.size(); i++){
+            if (processes[i].arrival_time <= clock && processes[i].state == Process_state::NEW) {
+                processes[i].state = Process_state::READY;
+                ready_queue.push(&processes[i]);
             }
         }
 
         // Push also any waiting process
 
-        for (int i = 0; i < blocked_queue.size(); i++){
+        for (size_t i = 0; i < blocked_queue.size(); i++){
             blocked_queue.front()->state = Process_state::READY;
             ready_queue.push(blocked_queue.front());
             blocked_queue.pop();
@@ -385,7 +385,7 @@ void CPU::shortest_remaining_time_first( Statistics &stats , vector<Process> pro
     priority_queue<Process *, vector<Process *>, sort_by_burst_time_left> ready_queue;
     queue<Process *> blocked_queue;
 
-    int current_p = 0;
+    size_t current_p = 0;
 
     while (stats.number_processes < processes.size()){
         // Check for processes that were created and arrived
@@ -399,7 +399,7 @@ void CPU::shortest_remaining_time_first( Statistics &stats , vector<Process> pro
 
         // Push also any waiting process
 
-        for (int i = 0; i < blocked_queue.size(); i++){
+        for (size_t i = 0; i < blocked_queue.size(); i++){
             blocked_queue.front()->state = Process_state::READY;
             ready_queue.push(blocked_queue.front());
             blocked_queue.pop();
@@ -432,7 +432,7 @@ void CPU::shortest_remaining_time_first( Statistics &stats , vector<Process> pro
         bool is_going_to_get_interrupted = false;
         int time_of_interruption = -1;
 
-        for (int i = current_p; i < processes.size(); i++){
+        for (size_t i = current_p; i < processes.size(); i++){
             if (current->burst_time_left - (processes[i].arrival_time - clock) > processes[i].burst_time_left){
                 is_going_to_get_interrupted = true;
                 time_of_interruption = processes[i].arrival_time;
@@ -478,7 +478,7 @@ void CPU::preemptive_priority( Statistics &stats , vector<Process> processes){
     priority_queue<Process *, vector<Process *>, sort_by_priority> ready_queue;
     queue<Process *> blocked_queue;
 
-    int current_p = 0;
+    size_t current_p = 0;
 
     while (stats.number_processes < processes.size()){
         // Check for processes that were created and arrived
@@ -492,7 +492,7 @@ void CPU::preemptive_priority( Statistics &stats , vector<Process> processes){
 
         // Push also any waiting process
 
-        for (int i = 0; i < blocked_queue.size(); i++){
+        for (size_t i = 0; i < blocked_queue.size(); i++){
             blocked_queue.front()->state = Process_state::READY;
             ready_queue.push(blocked_queue.front());
             blocked_queue.pop();
@@ -525,7 +525,7 @@ void CPU::preemptive_priority( Statistics &stats , vector<Process> processes){
         bool is_going_to_get_interrupted = false;
         int time_of_interruption = -1;
 
-        for (int i = current_p; i < processes.size(); i++){
+        for (size_t i = current_p; i < processes.size(); i++){
             if (current->priority > processes[i].priority){
                 is_going_to_get_interrupted = true;
                 time_of_interruption = processes[i].arrival_time;
@@ -605,7 +605,7 @@ vector<Process> create_random_processes(int n){
     // Sort processes by arrival time
     sort(processes.begin(), processes.end(), [](Process a, Process b){ return a.arrival_time < b.arrival_time; });
 
-    for (int i = 0; i < processes.size(); i++){
+    for (size_t i = 0; i < processes.size(); i++){
         processes[i].pid = i + 1;
     }
 

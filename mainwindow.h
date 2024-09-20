@@ -1,5 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
+#include <simulator.h>
 
 #include <QMainWindow>
 #include <QGraphicsScene>
@@ -20,9 +21,12 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    vector<Process> current_processes;
+
 private slots:
     void handle_simular();
     void handle_slider();
+    void handle_algorithm_select();
 
 private:
     Ui::MainWindow *ui;

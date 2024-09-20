@@ -10,12 +10,14 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     ui->sliderNumProcesos->setRange(1, 10);
     ui->sliderNumProcesos->setValue(5);
+    current_processes = {};
 
     connect(ui->btnSimular, &QPushButton::released, this, &MainWindow::handle_simular);
     connect(ui->sliderNumProcesos, &QSlider::valueChanged, this, &MainWindow::handle_slider);
+    connect(ui->AlgorithmSelect, &QComboBox::currentIndexChanged, this, &MainWindow::handle_algorithm_select);
 
     QGraphicsScene *scene = new QGraphicsScene(this);
-    scene->addText("Para empezar dale click a simular.");
+    scene->addText("Para empezar dale click a Nueva Simulación.");
 
     QGraphicsView *view = new QGraphicsView(scene);
     view->setScene(scene);
@@ -37,32 +39,35 @@ void MainWindow::handle_slider(){
     ui->numProcesos->setText(QString::number(ui->sliderNumProcesos->value()));
 }
 
-void MainWindow::handle_simular() {
+void MainWindow::handle_algorithm_select() {
+    if (current_processes.empty()) return;
+
+    int current_tab = ui->tabWidget->currentIndex();
+
     CPU cpu;
     Statistics stats;
-    vector<Process> processes = create_random_processes(ui->sliderNumProcesos->value());
 
     switch(ui->AlgorithmSelect->currentIndex()){
         case 0:
-            cpu.first_come_first_serve(stats, processes);
+            cpu.first_come_first_serve(stats, current_processes);
             break;
         case 1:
-            cpu.shortest_job_first(stats, processes);
+            cpu.shortest_job_first(stats, current_processes);
             break;
         case 2:
-            cpu.random_selection(stats, processes);
+            cpu.random_selection(stats, current_processes);
             break;
         case 3:
-            cpu.non_preemptive_priority(stats, processes);
+            cpu.non_preemptive_priority(stats, current_processes);
             break;
         case 4:
-            cpu.round_robin(stats, processes);
+            cpu.round_robin(stats, current_processes);
             break;
         case 5:
-            cpu.shortest_remaining_time_first(stats, processes);
+            cpu.shortest_remaining_time_first(stats, current_processes);
             break;
         case 6:
-            cpu.preemptive_priority(stats, processes);
+            cpu.preemptive_priority(stats, current_processes);
             break;
         default:
             cout << "HOLY COW YOU FOUND A NEW ALGORITHM\n";
@@ -94,8 +99,8 @@ void MainWindow::handle_simular() {
     QTextEdit *processes_info = new QTextEdit(ui->tabWidget);
     processes_info->setCurrentFont(QFont("Monospace"));
 
-    for(int i = 0; i < processes.size(); i++){
-        processes_info->append(processes[i].get_info());
+    for(int i = 0; i < current_processes.size(); i++){
+        processes_info->append(current_processes[i].get_info());
     }
 
     ui->tabWidget->insertTab(1, processes_info, "Procesos");
@@ -114,6 +119,7 @@ void MainWindow::handle_simular() {
     }
 
     ui->tabWidget->insertTab(2, log, "Log");
+    ui->tabWidget->setCurrentIndex(current_tab);
 
     ui->txtEsperaMin->setText("Mínimo:  " + QString::number(stats.min_wait_time) + "ms");
     ui->txtEsperaAvg->setText("Promedio:  " + QString::number(stats.average_wait_time) + "ms");
@@ -128,4 +134,9 @@ void MainWindow::handle_simular() {
     ui->txtInactivo->setText("Inactivo CPU: " + QString::number(stats.CPU_idle_time) + "ms [" + QString::number(stats.CPU_idle_time * 100.0 / stats.total_time) + "%]");
 
     cpu.restart();
+}
+
+void MainWindow::handle_simular(){
+    current_processes = create_random_processes(ui->sliderNumProcesos->value());
+    handle_algorithm_select();
 }

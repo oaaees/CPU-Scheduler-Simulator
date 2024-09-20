@@ -112,7 +112,7 @@ color: rgb(255,255,255);
 </string>
     </property>
     <property name="text">
-     <string>SImular</string>
+     <string>Nueva sImulación</string>
     </property>
    </widget>
    <widget class="Line" name="line">
