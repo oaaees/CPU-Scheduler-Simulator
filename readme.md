@@ -21,8 +21,8 @@ El simulador cuenta con una interfaz que permite a los usuarios:
 - Generar de manera aleatoria detalles de procesos como tiempo de llegada (arrival time), tiempo de procesamiento (burst time) y prioridad.
 - Seleccionar diferentes algoritmos de planificación para observar su comportamiento.
 
-![Captura de Pantalla 1](imgs/screenshot_1.jpg)
-![Captura de Pantalla 2](imgs/screenshot_2.jpg)
+![Captura de Pantalla 1](imgs/screenshot_1.png)
+![Captura de Pantalla 2](imgs/screenshot_2.png)
 
 ## Instalar y Ejecutar
 
